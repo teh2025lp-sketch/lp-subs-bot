@@ -132,7 +132,28 @@ async def stats_cmd(update, context: ContextTypes.DEFAULT_TYPE):
         f"🚪 Всего отписок: {total_unsubs}"
     )
 
-async def send_daily_report(context: ContextTypes.DEFAULT_TYPE):
+
+async def today_cmd(update, context: ContextTypes.DEFAULT_TYPE):
+    tz_str = os.getenv("REPORT_TZ", "Europe/Moscow")
+    tz = pytz.timezone(tz_str)
+    now = datetime.now(tz)
+    start = tz.localize(datetime.combine(now.date(), dtime(0,0)))
+    end = tz.localize(datetime.combine(now.date(), dtime(23,59,59)))
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM subs_audit WHERE event='subscribe' AND ts >= ? AND ts <= ?", (start.isoformat(), end.isoformat()))
+    subs = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM subs_audit WHERE event='unsubscribe' AND ts >= ? AND ts <= ?", (start.isoformat(), end.isoformat()))
+    unsubs = cur.fetchone()[0]
+    conn.close()
+    label = os.getenv("REPORT_LABEL", "Подписки")
+    await update.message.reply_text(
+        f"🧾 Отчёт: {label}\n"
+        f"📅 Сегодня: {now.strftime('%d.%m.%Y')}\n"
+        f"✅ Подписки: {subs}\n"
+        f"🚪 Отписки: {unsubs}"
+    )
+async def send_daily_reportasync def send_daily_report(context: ContextTypes.DEFAULT_TYPE):
     tz_str = os.getenv("REPORT_TZ", "Europe/Moscow")
     label = os.getenv("REPORT_LABEL", "Подписки")
     admin_raw = os.getenv("ADMIN_ID", "")
@@ -169,6 +190,7 @@ async def start_bot():
         .build()
     )
     application.add_handler(CommandHandler("stats", stats_cmd))
+    application.add_handler(CommandHandler("today", today_cmd))
     schedule_bot_jobs(application)
     bot_app = application
     await application.initialize()
