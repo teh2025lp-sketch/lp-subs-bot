@@ -153,7 +153,7 @@ async def today_cmd(update, context: ContextTypes.DEFAULT_TYPE):
         f"✅ Подписки: {subs}\n"
         f"🚪 Отписки: {unsubs}"
     )
-async def send_daily_reportasync def send_daily_report(context: ContextTypes.DEFAULT_TYPE):
+async def send_daily_report(context: ContextTypes.DEFAULT_TYPE) -> None:
     tz_str = os.getenv("REPORT_TZ", "Europe/Moscow")
     label = os.getenv("REPORT_LABEL", "Подписки")
     admin_raw = os.getenv("ADMIN_ID", "")
