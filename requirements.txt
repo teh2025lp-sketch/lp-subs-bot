@@ -1,0 +1,4 @@
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-telegram-bot~=20.6
+pytz==2024.1
